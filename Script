@@ -1,0 +1,87 @@
+#https://www.ncbi.nlm.nih.gov/sra/SRX17758485[accn]
+
+##STEP1: Data Downloading
+wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_1.fastq.gz
+wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_2.fastq.gz
+
+## Extrcation of data
+gunzip *.gz
+
+## STEP2: Quality Control using FastQC
+
+#Installation: sudo apt-get install fastqc
+
+fastqc *.fastq
+
+# There are three parameters we have to check to deicide the quality
+#1.Per base sequence quality
+#2. Overrepresneted sequence
+#3. Adapter content
+
+##STEP3: Trimming 
+
+##Trimming using fastp
+
+fastp -i sample.fastq -o trim_sample.fastq --adapter_fasta adapter.fasta
+
+##STEP4: Again check the quality
+
+fastqc trim_sample.fastq
+
+##STEP5: Aligning of reads to ref genome using BWA tool
+
+#Installation= sudo apt-get install bwa
+
+#A. Download the reference genome
+wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr17.fa.gz
+
+gunzip chr17.fa.gz
+
+mv chr17.fa genome.fa
+
+#Alignment having two steps
+
+#B. Indexing of reference genome using bwa
+bwa index -a bwtsw genome.fa
+
+#C. Aligning of reads to indexed genome
+bwa mem -t 2 genome.fa SRR21763320_1.fastq SRR21763320_2.fastq > bwa_SRR21763320.bam
+
+##STEP4: sorting of SAM file using samtools
+#Installation= sudo apt-get install samtools
+samtools sort bwa_SRR21763320.bam > sorted_SRR21763320.bam
+
+# Conversion of BAM into SAM
+samtools view sorted_SRR21763320.bam > sorted_SRR21763320.sam
+
+##STEP5: To remove the duplicates
+samtools rmdup -sS sorted_SRR21763320.bam rmdup_SRR21763320.bam
+
+##STEP8: Calling of variations using GATK
+#Installation: 
+wget -c https://github.com/broadinstitute/gatk/releases/download/4.3.0.0/gatk-4.3.0.0.zip
+
+# But GATK needs input in picard-tools format
+#Installation: 
+sudo apt-get install picard-tools
+#A. Convert the ref genome in Picard-tool format
+picard-tools CreateSequenceDictionary R=genome.fa O=genome.dict
+
+#B. Prepare the input unique bam file into picard-tools format
+picard-tools AddOrReplaceReadGroups I=rmdup_SRR21763320.bam O=picard_output.bam RGLB=lib1 RGPL=illumina RGPU=run RGSM=SRR21763320 SORT_ORDER=coordinate CREATE_INDEX=true VALIDATION_STRINGENCY=LENIENT
+      
+#C. Call variation using GATK
+
+samtools faidx genome.fa
+
+java -jar /mnt/f/Dr_OmicsLab/Tools/gatk-4.3.0.0/gatk-package-4.3.0.0-local.jar HaplotypeCaller -R genome.fa -I picard_output.bam -O GATK_outptut.vcf
+
+##Variation filetration
+cat  GATK_outptut.vcf | java -jar /mnt/f/Dr_OmicsLab/Tools/snpEff/SnpSift.jar filter "(( QUAL>=30) & (DP>=10) & (MQ>=30))" > filter.vcf
+
+
+##STEP9: Variant annotation using VEP
+
+https://www.ensembl.org/info/docs/tools/vep/online/VEP_web_documentation.pdf
+
+java -jar snpEff.jar chr3 GATK_outptut.vcf > VEP_output.vcf
