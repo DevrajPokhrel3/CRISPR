@@ -2,7 +2,7 @@
 # CRISPR Pipeline - README
 
 ## Overview
-_**All the steps are perform in linux**_   <br />
+_**All the steps are perform in linux.**_   <br />
 This repository provides a step-by-step guide for performing quality control, trimming, alignment, variant calling, and annotation of CRISPR data. The pipeline includes downloading raw sequencing data, processing it, and identifying genetic variants.
 
 ### Prerequisites
