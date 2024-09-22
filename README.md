@@ -54,7 +54,7 @@ touch adapter.fasta
 These are the Universal Adapters:
 _Illumina Universal Adapter_		=			AGATCGGAAGAG  <br />
 _Illumina Small RNA 3' Adapter_		=		TGGAATTCTCGG  <br />
-_Illumina Small RNA 5' Adapter	_	=		GATCGTCGGACT  <br />
+_Illumina Small RNA 5' Adapter_	=		GATCGTCGGACT  <br />
 _Nextera Transposase Sequence_		=		CTGTCTCTTATA  <br />
 _PolyA_			=		AAAAAAAAAAAA  <br />
 _PolyG_		=		GGGGGGGGGGGG  <br />
