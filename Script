@@ -1,6 +1,6 @@
-#https://www.ncbi.nlm.nih.gov/sra/SRX17758485[accn]
+# https://www.ncbi.nlm.nih.gov/sra/SRX17758485[accn]
 
-##STEP1: Data Downloading
+# STEP1: Data Downloading
 wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_1.fastq.gz
 wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_2.fastq.gz
 
