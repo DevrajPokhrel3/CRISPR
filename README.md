@@ -2,7 +2,7 @@
 # CRISPR Pipeline - README
 
 ## Overview
-
+_**All the steps are perform in linux**_   <br />
 This repository provides a step-by-step guide for performing quality control, trimming, alignment, variant calling, and annotation of CRISPR data. The pipeline includes downloading raw sequencing data, processing it, and identifying genetic variants.
 
 ### Prerequisites
@@ -45,22 +45,27 @@ Check the following parameters:
 3. Adapter content
 
 ### Step 4: Trimming
-Trim the reads using `fastp`:
-Create a adapter file first 
+Trim the reads using `fastp`:   <br />
+
+_Create a adapter file first_
 ```bash
 touch adapter.fasta
 ```
 These are the Universal Adapters:
-Illumina Universal Adapter					AGATCGGAAGAG
-Illumina Small RNA 3' Adapter				TGGAATTCTCGG
-Illumina Small RNA 5' Adapter				GATCGTCGGACT
-Nextera Transposase Sequence				CTGTCTCTTATA
-PolyA										AAAAAAAAAAAA
-PolyG										GGGGGGGGGGGG
+_Illumina Universal Adapter_		=			AGATCGGAAGAG  <br />
+_Illumina Small RNA 3' Adapter_		=		TGGAATTCTCGG  <br />
+_Illumina Small RNA 5' Adapter	_	=		GATCGTCGGACT  <br />
+_Nextera Transposase Sequence_		=		CTGTCTCTTATA  <br />
+_PolyA_			=		AAAAAAAAAAAA  <br />
+_PolyG_		=		GGGGGGGGGGGG  <br />
 
-Open newly created adapter.fasta file in Notepad and write:
+Open newly created **adapter.fasta** file in Notepad and write:   <br />
+```bash
 >H1
 AGATCGGAAGAG
+```
+
+after this perform below command.
 
 ```bash
 fastp -i sample.fastq -o trim_sample.fastq --adapter_fasta adapter.fasta
