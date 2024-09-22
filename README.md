@@ -46,6 +46,22 @@ Check the following parameters:
 
 ### Step 4: Trimming
 Trim the reads using `fastp`:
+Create a adapter file first 
+```bash
+touch adapter.fasta
+```
+These are the Universal Adapters:
+Illumina Universal Adapter					AGATCGGAAGAG
+Illumina Small RNA 3' Adapter				TGGAATTCTCGG
+Illumina Small RNA 5' Adapter				GATCGTCGGACT
+Nextera Transposase Sequence				CTGTCTCTTATA
+PolyA										AAAAAAAAAAAA
+PolyG										GGGGGGGGGGGG
+
+Open newly created adapter.fasta file in Notepad and write:
+>H1
+AGATCGGAAGAG
+
 ```bash
 fastp -i sample.fastq -o trim_sample.fastq --adapter_fasta adapter.fasta
 ```
