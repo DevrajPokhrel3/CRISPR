@@ -19,39 +19,15 @@ Ensure that the following tools are installed on your system:
 - [`SnpEff`](https://pcingola.github.io/SnpEff/): For variant annotation.
 - [`VEP`](https://www.ensembl.org/info/docs/tools/vep/index.html): Used for annotating variants based on the genome.
 
-## Pipeline Steps
 
-### Step 1: Downloading Raw Sequencing Data
-Use `wget` to download raw FASTQ files from the SRA repository:
-```bash
-wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_1.fastq.gz
-wget -c ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR217/020/SRR21763320/SRR21763320_2.fastq.gz
-```
-
-### Step 2: Data Extraction
-Decompress the FASTQ files:
-```bash
-gunzip *.gz
-```
-
-### Step 3: Quality Control
-Run quality control using `FastQC`:
-```bash
-fastqc *.fastq
-```
-Check the following parameters:
+(Step 3) During Quality Control check the following parameters:
 1. Per base sequence quality
 2. Overrepresented sequences
 3. Adapter content
 
-### Step 4: Trimming
-Trim the reads using `fastp`:   <br />
 
-_Create a adapter file first_
-```bash
-touch adapter.fasta
-```
-These are the Universal Adapters:
+(Step 4) For Trimming
+These are the Universal Adapters: 
 _Illumina Universal Adapter_		=			AGATCGGAAGAG  <br />
 _Illumina Small RNA 3' Adapter_		=		TGGAATTCTCGG  <br />
 _Illumina Small RNA 5' Adapter_	=		GATCGTCGGACT  <br />
@@ -64,90 +40,3 @@ Open newly created **adapter.fasta** file in Notepad and write:   <br />
 >H1
 AGATCGGAAGAG
 ```
-
-after this perform below command.
-
-```bash
-fastp -i sample.fastq -o trim_sample.fastq --adapter_fasta adapter.fasta
-```
-
-Run quality control on the trimmed reads:
-```bash
-fastqc trim_sample.fastq
-```
-
-### Step 5: Aligning Reads to the Reference Genome
-Download the reference genome:
-```bash
-wget -c https://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr17.fa.gz
-gunzip chr17.fa.gz
-mv chr17.fa genome.fa
-```
-
-Index the reference genome:
-```bash
-bwa index -a bwtsw genome.fa
-```
-
-Align the reads to the reference genome:
-```bash
-bwa mem -t 2 genome.fa SRR21763320_1.fastq SRR21763320_2.fastq > bwa_SRR21763320.bam
-```
-
-### Step 6: Sorting and Conversion
-Sort the BAM file using `samtools`:
-```bash
-samtools sort bwa_SRR21763320.bam > sorted_SRR21763320.bam
-```
-
-Convert the BAM file to SAM:
-```bash
-samtools view sorted_SRR21763320.bam > sorted_SRR21763320.sam
-```
-
-### Step 7: Removing Duplicates
-Remove duplicate reads using `samtools`:
-```bash
-samtools rmdup -sS sorted_SRR21763320.bam rmdup_SRR21763320.bam
-```
-
-### Step 8: Variant Calling
-Download and install GATK:
-```bash
-wget -c https://github.com/broadinstitute/gatk/releases/download/4.3.0.0/gatk-4.3.0.0.zip
-```
-
-Convert the reference genome to Picard-tools format:
-```bash
-picard-tools CreateSequenceDictionary R=genome.fa O=genome.dict
-```
-
-Prepare the BAM file for GATK:
-```bash
-picard-tools AddOrReplaceReadGroups I=rmdup_SRR21763320.bam O=picard_output.bam RGLB=lib1 RGPL=illumina RGPU=run RGSM=SRR21763320 SORT_ORDER=coordinate CREATE_INDEX=true VALIDATION_STRINGENCY=LENIENT
-```
-
-Call variants with GATK:
-```bash
-samtools faidx genome.fa
-java -jar /path/to/gatk-package-4.3.0.0-local.jar HaplotypeCaller -R genome.fa -I picard_output.bam -O GATK_output.vcf
-```
-
-### Step 9: Variant Filtering
-Filter variants using `SnpSift`:
-```bash
-cat GATK_output.vcf | java -jar /path/to/SnpSift.jar filter "(( QUAL>=30) & (DP>=10) & (MQ>=30))" > filter.vcf
-```
-
-### Step 10: Variant Annotation
-Annotate variants using VEP:
-Refer to the [VEP documentation](https://www.ensembl.org/info/docs/tools/vep/online/VEP_web_documentation.pdf) for more details.
-```bash
-java -jar snpEff.jar chr3 GATK_output.vcf > VEP_output.vcf
-```
-
-## License
-This project is licensed under the MIT License.
-
-## Acknowledgments
-This pipeline was inspired by various bioinformatics tools and resources such as FastQC, BWA, GATK, and VEP.
